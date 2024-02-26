@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Details</title>
+</head>
+<body>
+
+    <h1>Enter Numbers</h1>
+
+    <label for="number1">Number 1:</label>
+    <input type="text" id="number1" placeholder="Enter a number">
+    <br>
+
+    <label for="number2">Number 2:</label>
+    <input type="text" id="number2" placeholder="Enter a number">
+    <br>
+
+    <label for="numbers">Numbers (comma-separated):</label>
+    <input type="text" id="numbers" placeholder="e.g., 1,2,3,4">
+    <br>
+
+    <button id="submitBtn">Submit</button>
+
+    <h2>Result:</h2>
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('submitBtn').addEventListener('click', function() {
+            const number1 = document.getElementById('number1').value;
+            const number2 = document.getElementById('number2').value;
+            const numbersArray = document.getElementById('numbers').value.split(',').map(num => num.trim());
+
+            fetch('http://127.0.0.1:3000/details', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ number1, number2, numbers: numbersArray }),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+
+                document.getElementById('result').innerHTML = `Sum: ${data.sum}<br>Largest Number: ${data.largestNumber}`;
+            })
+            .catch((error) => {
+                console.error('There has been a problem with your fetch operation:', error);
+            });
+        });
+    </script>
+
+</body>
+</html>
+

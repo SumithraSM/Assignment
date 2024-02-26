@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="pswd.css">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+</head>
+<body>
+    <div class="login-container">
+        
+        <h2>Discover the world of Barbies</h2>
+        <h3>Login/SignUp</h3>
+        <form action="#" method="post">
+            <label><b></b><br><input type="text" name="username" placeholder="Username" id="username" required></label><br>
+            <label><b></b><br><input type="password" name="password" placeholder="Password" id="password" required></label><br>
+            <button id="loginbtn" type="button">Login</button>
+            
+            
+        </form>
+        
+        <div id="result"></div>
+
+        <script>
+            document.getElementById('loginbtn').addEventListener('click', function() {
+                event.preventDefault();
+                
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                const usernameRegex = /^[a-zA-Z]+[.][a-zA-Z]+@pivotree\.com$/;
+
+                fetch('http://127.0.0.1:3000/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password }),
+                })
+                .then(response => {
+                    if (!usernameRegex.test(username)) {
+                        console.error('Invalid username format');
+                        document.getElementById('result').innerText = alert('Invalid Email Format');
+                        return;
+                    } else {
+                        if (response.status === 401) {
+                            console.error('Invalid credentials');
+                            document.getElementById('result').innerText = alert('Unauthorized Access');
+                            throw new Error('Invalid credentials');
+                        }
+                        if (!response.ok) {
+                            console.error('Error during login:', response.statusText);
+                            document.getElementById('result').innerText = 'An error occurred';
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    }
+                })
+                .then(data => {
+                    if (data.success) {
+                        if (usernameRegex.test(username)) {
+                            console.log("data=====>", data);
+                            //document.getElementById('result').innerText = `${data?.user?.username} logged in successfully `;
+                            
+                            
+                            // document.getElementById('detailsbtn').disabled = false;
+                            window.location.href = 'itemlist.html';
+                        }
+                    } else {
+                        console.log('Error during login:', data.user.error);
+                        document.getElementById('result').innerText = alert('Invalid credentials');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+            
+
+            
+        </script>
+    </div>
+</body>
+</html>

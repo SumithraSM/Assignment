@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        /* Your existing styles remain unchanged */
+
+        input {
+            padding: 12px;
+            margin: 10px 0;
+            width: calc(100% - 24px);
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        #modifyBtn {
+            background-color: #4caf50;
+            color: #fff;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        #modifyBtn:hover {
+            background-color: #45a049;
+        }
+
+        #result3 {
+            max-width: 400px;
+            margin: auto;
+            background-color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    
+    <div id="result3"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const urlSearchParams = new URLSearchParams(window.location.search);
+            const desiredItemId = urlSearchParams.get('itemId');
+
+            fetch(`http://127.0.0.1:3000/list`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => {
+                console.log('Response Status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Item List Array:', data?.items || []);
+
+                const item = data?.items?.find(item => item.itemId === desiredItemId);
+
+                if (item) {
+                    const form = createForm(item);
+                    document.getElementById('result3').appendChild(form);
+                } else {
+                    document.getElementById('result3').innerText = 'Item not found';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching items:', error);
+                document.getElementById('result3').innerText = 'Error fetching items';
+            });
+
+            function createForm(item) {
+                const form = document.createElement('form');
+
+                for (const [key, value] of Object.entries(item)) {
+                    if (key !== '_id') {
+                        const label = document.createElement('label');
+                        label.textContent = key;
+                        form.appendChild(label);
+
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.name = key;
+                        input.value = value;
+                        form.appendChild(input);
+                    }
+                }
+
+                const modifyBtn = document.createElement('button');
+                modifyBtn.id = 'modifyBtn';
+                modifyBtn.type = 'button';
+                modifyBtn.textContent = 'Modify';
+                modifyBtn.addEventListener('click', function () {
+                    const inputs = document.querySelectorAll('input');
+                    const updatedDetails = {};
+
+                    inputs.forEach(input => {
+                        updatedDetails[input.name] = input.value;
+                    });
+
+                    // Now `updatedDetails` contains the values of all input elements
+                    document.getElementById('result3').innerText = JSON.stringify(updatedDetails);
+
+                    // Add your logic here to update the database with `updatedDetails`
+                    updateItemInDatabase(updatedDetails);
+                });
+
+                form.appendChild(modifyBtn);
+
+                return form;
+            }
+
+            function updateItemInDatabase(updatedDetails) {
+                const urlSearchParams = new URLSearchParams(window.location.search);
+                const itemId = urlSearchParams.get('itemId');
+
+                fetch(`http://127.0.0.1:3000/update/${itemId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(updatedDetails),
+                })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Item successfully updated!');
+                    } else {
+                        alert('Failed to update item. Please try again.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating item:', error);
+                    alert('An error occurred. Please try again.');
+                });
+            }
+        });
+    </script>
+</body>
+</html>
